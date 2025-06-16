@@ -2,8 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"errors"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -22,42 +20,16 @@ func HelloHandler(w http.ResponseWriter, req *http.Request) {
 
 // PostArticleHandler
 func PostArticleHandler(w http.ResponseWriter, req *http.Request) {
-	// HTTPリクエストボディに含まれているjsonから構造体にデコードし
-	// jsonにエンコードした上で、返却する
-	// 1. バイトスライスの用意
-	length, err := strconv.Atoi(req.Header.Get("Content-Length"))
-	if err != nil {
-		http.Error(w, "can not get content length\n", http.StatusBadRequest)
-		return
-	}
-	reqBodybuffer := make([]byte, length)
-
-	// 2. Readメソッドでリクエストボディの読み出し
-	if _, err := req.Body.Read(reqBodybuffer); !errors.Is(err, io.EOF) {
-		http.Error(w, "fail to get request body\n", http.StatusBadRequest)
-		return
-	}
-
-	// 3. ボディをCloseする
-	defer req.Body.Close()
-
-	// 4. ボディをデコードし記事を取得する
+	// jsonのデコーダーを使用し、リクエストボディをデコードし、記事を取得する
 	var reqArticle models.Article
-	if err := json.Unmarshal(reqBodybuffer, &reqArticle); err != nil {
+	if err := json.NewDecoder(req.Body).Decode(&reqArticle); err != nil {
 		http.Error(w, "fail to decode json\n", http.StatusBadRequest)
-		fmt.Println(err)
 		return
 	}
 	article := reqArticle
 
-	// 5. 記事をjsonにエンコードした上で、返却する
-	jsonData, err := json.Marshal(article)
-	if err != nil {
-		http.Error(w, "fail to encode json\n", http.StatusInternalServerError)
-		return
-	}
-
-	w.Write(jsonData)
+	// jsonのエンコーダーを使用し、記事をエンコードした上で、返却する
+	json.NewEncoder(w).Encode(article)
 }
 
 // ArticleListHandler
@@ -81,14 +53,10 @@ func ArticleListHandler(w http.ResponseWriter, req *http.Request) {
 	// pageについては後程使用する為、暫定処理を追加
 	log.Println(page)
 
-	// 記事1と記事2をjsonにエンコードした上で、返却する
+	// jsonのエンコーダーを使用し、記事1と記事2をjsonにエンコードした上で、返却する
 	articleList := []models.Article{models.Article1, models.Article2}
-	jsonData, err := json.Marshal(articleList)
-	if err != nil {
-		http.Error(w, "fail to encode\n", http.StatusInternalServerError)
-		return
-	}
-	w.Write(jsonData)
+
+	json.NewEncoder(w).Encode(articleList)
 }
 
 // ArticleDetailHandler
@@ -100,40 +68,39 @@ func ArticleDetailHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// 記事1をjsonにエンコードした上で、返却する
-	article := models.Article1
-	jsonData, err := json.Marshal(article)
-	if err != nil {
-		http.Error(w, "fail to encode\n", http.StatusInternalServerError)
-		return
-	}
-
 	// articleIDについては後程使用する為、暫定処理を追加
 	log.Println(articleID)
 
-	w.Write(jsonData)
+	// jsonのエンコーダーを使用し、記事1をjsonにエンコードした上で、返却する
+	article := models.Article1
+
+	json.NewEncoder(w).Encode(article)
 }
 
 // PostNiceHandler
 func PostNiceHandler(w http.ResponseWriter, req *http.Request) {
-	// 記事1をjsonにエンコードした上で、返却する
-	article := models.Article1
-	jsonData, err := json.Marshal(article)
-	if err != nil {
-		http.Error(w, "fail to encode\n", http.StatusInternalServerError)
+	// jsonのデコーダーを使用し、リクエストボディをデコードし、記事を取得する
+	var reqArticle models.Article
+	if err := json.NewDecoder(req.Body).Decode(&reqArticle); err != nil {
+		http.Error(w, "fail to decode\n", http.StatusBadRequest)
 		return
 	}
-	w.Write(jsonData)
+	article := reqArticle
+
+	// jsonのエンコーダーを使用し、記事をjsonにエンコードした上で、返却する
+	json.NewEncoder(w).Encode(article)
 }
 
 // PostCommentHandler
 func PostCommentHandler(w http.ResponseWriter, req *http.Request) {
-	// コメント1をjsonにエンコードした上で、返却する
-	comment := models.Comment1
-	jsonData, err := json.Marshal(comment)
-	if err != nil {
-		http.Error(w, "fail to encode\n", http.StatusInternalServerError)
+	// jsonのデコーダーを使用し、リクエストボディをデコードし、コメントを取得する
+	var reqComment models.Comment
+	if err := json.NewDecoder(req.Body).Decode(&reqComment); err != nil {
+		http.Error(w, "fail to decode\n", http.StatusBadRequest)
 		return
 	}
-	w.Write(jsonData)
+	comment := reqComment
+
+	// jsonのエンコーダーを使用し、コメントをjsonにエンコードした上で、返却する
+	json.NewEncoder(w).Encode(comment)
 }
