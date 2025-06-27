@@ -1,11 +1,13 @@
-# コンテナの設定を記述
-version: "3.8"
 services:
   db:
     image: mysql:latest # MySQLのバージョンを指定
-    container_name: db-for-go
+    container_name: db-for-go # コンテナ名を指定
     env_file: ./mysql/env/db_env_file # コンテナ内で使用する環境変数の設定
     
+    # タイムゾーンの設定
+    environment:
+      TZ: "Asia/Tokyo"
+
     # コンテナの3306番ポートを、ローカルの3306番ポートにつなげる
     ports:
       - "3306:3306"
@@ -13,7 +15,7 @@ services:
     # コンテナ内にあるMySQLに格納するデータを永続化させるために使用するボリュームを指定
     volumes:
       - db_data:/var/lib/mysql
-      - ./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.db
+      - ./mysql/initdb.d:/docker-entrypoint-initdb.d
       - ./mysql/my.cnf:/etc/mysql/conf.d/my.cnf
 
 # ボリュームの作成
