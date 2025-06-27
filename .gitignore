@@ -1,2 +1,2 @@
 # git管理対象外にするファイルを指定
-.env
+./docker-compose/docker-mysql/mysql/env/db_env_file
