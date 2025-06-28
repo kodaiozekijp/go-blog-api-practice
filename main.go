@@ -9,6 +9,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 	"github.com/kodaiozekijp/go-blog-api-practice/handlers"
+	"github.com/kodaiozekijp/go-blog-api-practice/models"
 )
 
 func main() {
@@ -37,7 +38,6 @@ func main() {
 	dbUser := "docker"
 	dbPassword := "docker"
 	dbDatabase := "blog_api_db"
-
 	// データベースに接続するためのアドレス文を定義
 	dbConn := fmt.Sprintf("%s:%s@tcp(127.0.0.1:3306)/%s?parseTime=true",
 		dbUser, dbPassword, dbDatabase)
@@ -47,14 +47,40 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	}
-
 	// プログラムが終了するときに、コネクションがcloseされるようにする
 	defer db.Close()
 
-	// sql.DB型のPingメソッドで疎通確認をする
-	if err := db.Ping(); err != nil {
+	// レコードの取得
+	// クエリの準備
+	const sqlStr = `
+			SELECT title, contents, username, nice
+			FROM articles;
+	`
+	// クエリを実行し、レコードを取得する
+	rows, err := db.Query(sqlStr)
+	if err != nil {
 		fmt.Println(err)
-	} else {
-		fmt.Println("connect to DB")
+		return
 	}
+	// Rowsをcloseする
+	defer rows.Close()
+
+	// rowsのレコードを構造体に格納する
+	// models.Article型のスライスを用意する
+	articleArray := make([]models.Article, 0)
+	// レコードが存在する間は以下の処理を行う
+	for rows.Next() {
+		// レコードの各カラムを構造体に格納する
+		var article models.Article
+		err := rows.Scan(&article.Title, &article.Contents, &article.Author,
+			&article.NiceNum)
+		// エラーが無い場合は、articleArrayに記事を格納する
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			articleArray = append(articleArray, article)
+		}
+	}
+
+	fmt.Printf("%+v\n", articleArray)
 }
