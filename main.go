@@ -53,8 +53,7 @@ func main() {
 	// レコードの取得
 	// クエリの準備
 	const sqlStr = `
-			SELECT title, contents, username, nice
-			FROM articles;
+			SELECT * FROM articles;
 	`
 	// クエリを実行し、レコードを取得する
 	rows, err := db.Query(sqlStr)
@@ -72,8 +71,13 @@ func main() {
 	for rows.Next() {
 		// レコードの各カラムを構造体に格納する
 		var article models.Article
-		err := rows.Scan(&article.Title, &article.Contents, &article.Author,
-			&article.NiceNum)
+		var createdTime sql.NullTime
+		err := rows.Scan(&article.ID, &article.Title, &article.Contents,
+			&article.Author, &article.NiceNum, &createdTime)
+		// 取得したレコードのcreated_atがnullでない場合は構造体に格納
+		if createdTime.Valid {
+			article.CreatedAt = createdTime.Time
+		}
 		// エラーが無い場合は、articleArrayに記事を格納する
 		if err != nil {
 			fmt.Println(err)
