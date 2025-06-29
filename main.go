@@ -53,38 +53,31 @@ func main() {
 	// レコードの取得
 	// クエリの準備
 	const sqlStr = `
-			SELECT * FROM articles;
+			SELECT * FROM articles WHERE article_id = ?;
 	`
 	// クエリを実行し、レコードを取得する
-	rows, err := db.Query(sqlStr)
+	articleID := 1
+	row := db.QueryRow(sqlStr, articleID)
+	if err := row.Err(); err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	// rowのレコードを構造体に格納する
+	// レコードの各カラムを構造体に格納する
+	var article models.Article
+	var createdTime sql.NullTime
+	err = row.Scan(&article.ID, &article.Title, &article.Contents,
+		&article.Author, &article.NiceNum, &createdTime)
+	// エラーの場合は、retrunする
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	// Rowsをcloseする
-	defer rows.Close()
-
-	// rowsのレコードを構造体に格納する
-	// models.Article型のスライスを用意する
-	articleArray := make([]models.Article, 0)
-	// レコードが存在する間は以下の処理を行う
-	for rows.Next() {
-		// レコードの各カラムを構造体に格納する
-		var article models.Article
-		var createdTime sql.NullTime
-		err := rows.Scan(&article.ID, &article.Title, &article.Contents,
-			&article.Author, &article.NiceNum, &createdTime)
-		// 取得したレコードのcreated_atがnullでない場合は構造体に格納
-		if createdTime.Valid {
-			article.CreatedAt = createdTime.Time
-		}
-		// エラーが無い場合は、articleArrayに記事を格納する
-		if err != nil {
-			fmt.Println(err)
-		} else {
-			articleArray = append(articleArray, article)
-		}
+	// 取得したレコードのcreated_atがnullでない場合は構造体に格納
+	if createdTime.Valid {
+		article.CreatedAt = createdTime.Time
 	}
 
-	fmt.Printf("%+v\n", articleArray)
+	fmt.Printf("%+v\n", article)
 }
