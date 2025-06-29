@@ -78,7 +78,6 @@ func main() {
 	if createdTime.Valid {
 		article.CreatedAt = createdTime.Time
 	}
-
 	fmt.Printf("%+v\n", article)
 
 	// レコードの挿入
@@ -98,8 +97,48 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-
 	// 結果を確認
 	fmt.Println(result.LastInsertId())
 	fmt.Println(result.RowsAffected())
+
+	// トランザクションを利用したレコードの更新
+	// トランザクションの開始
+	tx, err := db.Begin()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	// 更新する記事を取得する
+	updateArticleID := 2
+	const sqlStrGetNice = `
+		SELECT nice FROM articles WHERE article_id = ?;
+	`
+	// SELECT文を実行する
+	updateRow := tx.QueryRow(sqlStrGetNice, updateArticleID)
+	if err := updateRow.Err(); err != nil {
+		fmt.Println(err)
+		tx.Rollback()
+		return
+	}
+	// 変数niceNumに現在のいいね数を保持する
+	var niceNum int
+	err = row.Scan(&niceNum)
+	if err != nil {
+		fmt.Println(err)
+		tx.Rollback()
+		return
+	}
+	// いいね数を+1する更新処理
+	const sqlStrUpdateNice = `
+		UPDATE articles SET nice = ? WHERE article_id = ?;
+	`
+	// UPDATE文を実行する
+	_, err = tx.Exec(sqlStrUpdateNice, updateArticleID, niceNum)
+	if err != nil {
+		fmt.Println(err)
+		tx.Rollback()
+		return
+	}
+	// コミットして処理内容を確定させる
+	tx.Commit()
 }
