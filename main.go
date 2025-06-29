@@ -80,4 +80,26 @@ func main() {
 	}
 
 	fmt.Printf("%+v\n", article)
+
+	// レコードの挿入
+	insertArticle := models.Article{
+		Title:    "insert test",
+		Contents: "can I insert data correctly?",
+		Author:   "kodai",
+	}
+	const sqlStrIns = `
+		INSERT INTO articles (title, contents, author, nice, created_at)
+		VALUES (?, ?, ?, 0, now());
+	`
+	// INSERT文を実行する
+	result, err := db.Exec(sqlStrIns, insertArticle.Title, insertArticle.Contents,
+		insertArticle.Author)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	// 結果を確認
+	fmt.Println(result.LastInsertId())
+	fmt.Println(result.RowsAffected())
 }

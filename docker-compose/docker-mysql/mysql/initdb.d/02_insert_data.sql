@@ -1,8 +1,8 @@
 # 記事データ2つ
-INSERT INTO articles (title, contents, username, nice, created_at) VALUES 
+INSERT INTO articles (title, contents, author, nice, created_at) VALUES 
   ('1st Post', 'This is my first blog', 'kodai', 1, now());
 
-INSERT INTO articles (title, contents, username, nice) VALUES 
+INSERT INTO articles (title, contents, author, nice) VALUES 
   ('2nd Post', 'Second blog post', 'kodai', 2);
 
 # コメントデータ2つ
