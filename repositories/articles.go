@@ -82,7 +82,7 @@ func SelectArticleDetail(db *sql.DB, articleID int) (models.Article, error) {
 	// 取得したレコードをarticleに格納（作成日時はNULLの可能性を考慮）
 	var createdAt sql.NullTime
 	err := row.Scan(&article.ID, &article.Title, &article.Contents,
-		&article.Author, &article.NiceNum, &article.CommentList, &createdAt)
+		&article.Author, &article.NiceNum, &createdAt)
 	if err != nil {
 		return models.Article{}, err
 	}

@@ -4,7 +4,6 @@ import (
 	"log"
 	"net/http"
 
-	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 	"github.com/kodaiozekijp/go-blog-api-practice/handlers"
 )
