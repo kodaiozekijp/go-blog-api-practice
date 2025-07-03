@@ -7,6 +7,36 @@ import (
 	"github.com/kodaiozekijp/go-blog-api-practice/repositories"
 )
 
+func TestInsertArticle(t *testing.T) {
+	// テスト対象の関数に渡す記事の定義
+	article := models.Article{
+		Title:    "insertTest",
+		Contents: "insert test",
+		Author:   "kodai",
+		NiceNum:  0,
+	}
+
+	// テスト対象の関数の実行
+	expectedID := 3
+	got, err := repositories.InsertArticle(testDB, article)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// InsertArticle関数から得た記事IDと期待値の検証
+	if got.ID != expectedID {
+		t.Errorf("new article id is expected %d but got %d\n", expectedID, got.ID)
+	}
+
+	// 個別の後処理の実装(追加したレコードの削除)
+	t.Cleanup(func() {
+		const sqlStr = `
+			DELETE FROM articles WHERE title = ? AND contents = ? AND author = ?;
+		`
+		testDB.Exec(sqlStr, article.Title, article.Contents, article.Author)
+	})
+}
+
 func TestSelectArticleList(t *testing.T) {
 	// テスト対象の関数の実行
 	expectedNum := 2
@@ -15,7 +45,7 @@ func TestSelectArticleList(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// SelectArticleList関数から得たArticleスライスの長さと期待値の検証
+	// SelectArticleList関数から得た記事スライスの長さと期待値の検証
 	if num := len(got); num != expectedNum {
 		t.Errorf("want %d but got %d articles\n", expectedNum, num)
 	}
