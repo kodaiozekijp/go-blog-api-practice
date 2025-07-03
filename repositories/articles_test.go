@@ -1,30 +1,27 @@
 package repositories_test
 
 import (
-	"database/sql"
-	"fmt"
 	"testing"
 
 	"github.com/kodaiozekijp/go-blog-api-practice/models"
 	"github.com/kodaiozekijp/go-blog-api-practice/repositories"
-
-	_ "github.com/go-sql-driver/mysql"
 )
 
-func TestSelectArticleDetail(t *testing.T) {
-	// DBへの接続
-	dbUser := "docker"
-	dbPassword := "docker"
-	dbDatabase := "blog_api_db"
-	dbConn := fmt.Sprintf("%s:%s@tcp(127.0.0.1:3306)/%s?parseTime=true",
-		dbUser, dbPassword, dbDatabase)
-
-	db, err := sql.Open("mysql", dbConn)
+func TestSelectArticleList(t *testing.T) {
+	// テスト対象の関数の実行
+	expectedNum := 2
+	got, err := repositories.SelectArticleList(testDB, 1)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer db.Close()
 
+	// SelectArticleList関数から得たArticleスライスの長さと期待値の検証
+	if num := len(got); num != expectedNum {
+		t.Errorf("want %d but got %d articles\n", expectedNum, num)
+	}
+}
+
+func TestSelectArticleDetail(t *testing.T) {
 	// テーブルドリブンテストの実装
 	// struct構造体のスライスを準備
 	tests := []struct {
@@ -56,10 +53,11 @@ func TestSelectArticleDetail(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.testTitle, func(t *testing.T) {
 			// DBから記事を取得する
-			got, err := repositories.SelectArticleDetail(db, test.expected.ID)
+			got, err := repositories.SelectArticleDetail(testDB, test.expected.ID)
 			if err != nil {
 				t.Fatal(err)
 			}
+
 			// 取得した値と期待値との検証
 			if got.ID != test.expected.ID {
 				t.Errorf("ID: got %d but want %d\n", got.ID, test.expected.ID)
