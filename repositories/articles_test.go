@@ -112,39 +112,25 @@ func TestSelectArticleDetail(t *testing.T) {
 }
 
 func TestUpdateNiceNum(t *testing.T) {
-	// 期待値の記事の定義
-	expected := models.Article{
-		ID:      1,
-		NiceNum: 2,
-	}
-	// テスト対象の関数を実行
-	err := repositories.UpdateNiceNum(testDB, expected.ID)
+	// 関数実行前の記事を取得
+	articleID := 1
+	before, err := repositories.SelectArticleDetail(testDB, articleID)
 	if err != nil {
 		t.Fatal(err)
 	}
-	// 関数実行後のいいね数を取得
-	const sqlGetNice = `
-		SELECT nice FROM articles WHERE article_id = ?;
-	`
-	var niceNum int
-	row := testDB.QueryRow(sqlGetNice, expected.ID)
-	if err = row.Err(); err != nil {
+	// テスト対象の関数を実行
+	err = repositories.UpdateNiceNum(testDB, articleID)
+	if err != nil {
 		t.Fatal(err)
 	}
-	// 取得したいいね数と期待値の比較検証
-	if err = row.Scan(&niceNum); err != nil {
+	// 関数実行後の記事を取得
+	after, err := repositories.SelectArticleDetail(testDB, articleID)
+	if err != nil {
 		t.Fatal(err)
 	}
-	if niceNum != expected.NiceNum {
-		t.Errorf("nice num is expected %d but %d", expected.NiceNum, niceNum)
+
+	// 実行結果の検証
+	if after.NiceNum-before.NiceNum != 1 {
+		t.Error("fail to update nice num")
 	}
-	// 後処理
-	t.Cleanup(func() {
-		// いいね数を1減らすクエリの定義
-		const sqlMinusNiceNum = `
-			UPDATE articles SET nice = ? WHERE article_id = ?;
-		`
-		// クエリの実行
-		testDB.Exec(sqlMinusNiceNum, niceNum-1, expected.ID)
-	})
 }
