@@ -11,7 +11,7 @@ import (
 func InsertComment(db *sql.DB, comment models.Comment) (models.Comment, error) {
 	// INSERT文の定義
 	const sqlStr = `
-		INSERT INTO comments (article_id, message, create_at)
+		INSERT INTO comments (article_id, message, created_at)
 		VALUES (?, ?, now());
 	`
 	// 返却用のComment構造体の定義
@@ -48,7 +48,7 @@ func SelectCommentList(db *sql.DB, articleID int) ([]models.Comment, error) {
 	for rows.Next() {
 		var comment models.Comment
 		var createdAt sql.NullTime
-		err = rows.Scan(&comment.ArticleID, &comment.CommentID, &comment.Message,
+		err = rows.Scan(&comment.CommentID, &comment.ArticleID, &comment.Message,
 			&createdAt)
 		if err != nil {
 			return nil, err

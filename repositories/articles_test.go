@@ -20,7 +20,7 @@ func TestInsertArticle(t *testing.T) {
 	expectedID := 3
 	got, err := repositories.InsertArticle(testDB, article)
 	if err != nil {
-		t.Fatal(err)
+		t.Error(err)
 	}
 
 	// InsertArticle関数から得た記事IDと期待値の検証
@@ -118,11 +118,13 @@ func TestUpdateNiceNum(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	// テスト対象の関数を実行
 	err = repositories.UpdateNiceNum(testDB, articleID)
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	// 関数実行後の記事を取得
 	after, err := repositories.SelectArticleDetail(testDB, articleID)
 	if err != nil {
