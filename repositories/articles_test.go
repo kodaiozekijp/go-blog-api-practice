@@ -5,17 +5,12 @@ import (
 
 	"github.com/kodaiozekijp/go-blog-api-practice/models"
 	"github.com/kodaiozekijp/go-blog-api-practice/repositories"
+	"github.com/kodaiozekijp/go-blog-api-practice/repositories/testdata"
 )
 
 func TestInsertArticle(t *testing.T) {
 	// テスト対象の関数に渡す記事の定義
-	article := models.Article{
-		Title:    "insertTest",
-		Contents: "insert test",
-		Author:   "kodai",
-		NiceNum:  0,
-	}
-
+	article := testdata.InsertArticleTestData
 	// テスト対象の関数の実行
 	expectedID := 3
 	got, err := repositories.InsertArticle(testDB, article)
@@ -39,7 +34,7 @@ func TestInsertArticle(t *testing.T) {
 
 func TestSelectArticleList(t *testing.T) {
 	// テスト対象の関数の実行
-	expectedNum := 2
+	expectedNum := len(testdata.SelectArticleTestData)
 	got, err := repositories.SelectArticleList(testDB, 1)
 	if err != nil {
 		t.Fatal(err)
@@ -60,22 +55,10 @@ func TestSelectArticleDetail(t *testing.T) {
 	}{
 		{
 			testTitle: "subtest1",
-			expected: models.Article{
-				ID:       1,
-				Title:    "1st Post",
-				Contents: "This is my first blog",
-				Author:   "kodai",
-				NiceNum:  1,
-			},
+			expected:  testdata.SelectArticleTestData[0],
 		}, {
 			testTitle: "subtest2",
-			expected: models.Article{
-				ID:       2,
-				Title:    "2nd Post",
-				Contents: "Second blog post",
-				Author:   "kodai",
-				NiceNum:  2,
-			},
+			expected:  testdata.SelectArticleTestData[1],
 		},
 	}
 

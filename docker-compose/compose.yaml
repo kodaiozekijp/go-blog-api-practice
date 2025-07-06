@@ -2,10 +2,13 @@ services:
   db:
     image: mysql:latest # MySQLのバージョンを指定
     container_name: db-for-go # コンテナ名を指定
-    env_file: ./mysql/env/db_env_file # コンテナ内で使用する環境変数の設定
     
     # タイムゾーンの設定
     environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       TZ: "Asia/Tokyo"
 
     # コンテナの3306番ポートを、ローカルの3306番ポートにつなげる
