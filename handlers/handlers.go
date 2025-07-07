@@ -3,12 +3,12 @@ package handlers
 import (
 	"encoding/json"
 	"io"
-	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/gorilla/mux"
 	"github.com/kodaiozekijp/go-blog-api-practice/models"
+	"github.com/kodaiozekijp/go-blog-api-practice/services"
 )
 
 // ハンドラ定義
@@ -26,10 +26,16 @@ func PostArticleHandler(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, "fail to decode json\n", http.StatusBadRequest)
 		return
 	}
-	article := reqArticle
+
+	// services層の関数PostArticleServiceで記事を登録する
+	newArticle, err := services.PostArticleService(reqArticle)
+	if err != nil {
+		http.Error(w, "fail internal exec\n", http.StatusInternalServerError)
+		return
+	}
 
 	// jsonのエンコーダーを使用し、記事をエンコードした上で、返却する
-	json.NewEncoder(w).Encode(article)
+	json.NewEncoder(w).Encode(newArticle)
 }
 
 // ArticleListHandler
@@ -50,12 +56,14 @@ func ArticleListHandler(w http.ResponseWriter, req *http.Request) {
 		page = 1
 	}
 
-	// pageについては後程使用する為、暫定処理を追加
-	log.Println(page)
+	// services層の関数GetArticleListServiceで記事の一覧を取得
+	articleList, err := services.GetArticleListService(page)
+	if err != nil {
+		http.Error(w, "fail internal exec\n", http.StatusInternalServerError)
+		return
+	}
 
-	// jsonのエンコーダーを使用し、記事1と記事2をjsonにエンコードした上で、返却する
-	articleList := []models.Article{models.Article1, models.Article2}
-
+	// jsonのエンコーダーを使用し、記事一覧をjsonにエンコードした上で返却する
 	json.NewEncoder(w).Encode(articleList)
 }
 
@@ -68,12 +76,14 @@ func ArticleDetailHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// articleIDについては後程使用する為、暫定処理を追加
-	log.Println(articleID)
+	//  services層の関数GetArticleServiceでIDに紐づく記事を取得
+	article, err := services.GetArticleService(articleID)
+	if err != nil {
+		http.Error(w, "fail internal exec\n", http.StatusInternalServerError)
+		return
+	}
 
 	// jsonのエンコーダーを使用し、記事1をjsonにエンコードした上で、返却する
-	article := models.Article1
-
 	json.NewEncoder(w).Encode(article)
 }
 
@@ -85,7 +95,13 @@ func PostNiceHandler(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, "fail to decode\n", http.StatusBadRequest)
 		return
 	}
-	article := reqArticle
+
+	// services層の関数PostNiceServiceで記事のいいね数を1増やす
+	article, err := services.PostNiceService(reqArticle)
+	if err != nil {
+		http.Error(w, "fail internal exec\n", http.StatusInternalServerError)
+		return
+	}
 
 	// jsonのエンコーダーを使用し、記事をjsonにエンコードした上で、返却する
 	json.NewEncoder(w).Encode(article)
@@ -99,7 +115,13 @@ func PostCommentHandler(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, "fail to decode\n", http.StatusBadRequest)
 		return
 	}
-	comment := reqComment
+
+	//
+	comment, err := services.PostCommentService(reqComment)
+	if err != nil {
+		http.Error(w, "fail internal exec\n", http.StatusInternalServerError)
+		return
+	}
 
 	// jsonのエンコーダーを使用し、コメントをjsonにエンコードした上で、返却する
 	json.NewEncoder(w).Encode(comment)

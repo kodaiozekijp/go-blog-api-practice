@@ -20,7 +20,7 @@ var (
 // 環境変数から必要な値を取得する処理
 func initEnv() (string, string, string) {
 	// 環境変数を設定
-	err := godotenv.Load("../docker-compose/.env")
+	err := godotenv.Load("./docker-compose/.env")
 	if err != nil {
 		fmt.Println(err)
 		return "", "", ""
