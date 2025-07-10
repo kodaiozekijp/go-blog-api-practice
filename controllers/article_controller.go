@@ -7,30 +7,30 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
+	"github.com/kodaiozekijp/go-blog-api-practice/controllers/services"
 	"github.com/kodaiozekijp/go-blog-api-practice/models"
-	"github.com/kodaiozekijp/go-blog-api-practice/services"
 )
 
 // コントローラ構造体を定義
-type MyAppController struct {
-	// フィールドにMyAppService構造体を持たせる
-	service *services.MyAppService
+type ArticleController struct {
+	// フィールドにArticleServicerインタフェースを持たせる
+	service services.ArticleServicer
 }
 
 // コンストラクタの定義
-func NewMyAppController(s *services.MyAppService) *MyAppController {
-	return &MyAppController{service: s}
+func NewArticleController(s services.ArticleServicer) *ArticleController {
+	return &ArticleController{service: s}
 }
 
 // ハンドラ定義
 // HelloHandler
-func (c *MyAppController) HelloHandler(w http.ResponseWriter, req *http.Request) {
+func (c *ArticleController) HelloHandler(w http.ResponseWriter, req *http.Request) {
 	// ハンドラの処理内容
 	io.WriteString(w, "hello, World!\n")
 }
 
 // PostArticleHandler
-func (c *MyAppController) PostArticleHandler(w http.ResponseWriter, req *http.Request) {
+func (c *ArticleController) PostArticleHandler(w http.ResponseWriter, req *http.Request) {
 	// jsonのデコーダーを使用し、リクエストボディをデコードし、記事を取得する
 	var reqArticle models.Article
 	if err := json.NewDecoder(req.Body).Decode(&reqArticle); err != nil {
@@ -50,7 +50,7 @@ func (c *MyAppController) PostArticleHandler(w http.ResponseWriter, req *http.Re
 }
 
 // ArticleListHandler
-func (c *MyAppController) ArticleListHandler(w http.ResponseWriter, req *http.Request) {
+func (c *ArticleController) ArticleListHandler(w http.ResponseWriter, req *http.Request) {
 	// URLからクエリパラメータを取得
 	queryMap := req.URL.Query()
 	// ページ番号に該当するデータを返す
@@ -79,7 +79,7 @@ func (c *MyAppController) ArticleListHandler(w http.ResponseWriter, req *http.Re
 }
 
 // ArticleDetailHandler
-func (c *MyAppController) ArticleDetailHandler(w http.ResponseWriter, req *http.Request) {
+func (c *ArticleController) ArticleDetailHandler(w http.ResponseWriter, req *http.Request) {
 	// URLからパスパラメータである記事IDを取得し、該当する記事を返す
 	articleID, err := strconv.Atoi(mux.Vars(req)["id"])
 	if err != nil {
@@ -99,7 +99,7 @@ func (c *MyAppController) ArticleDetailHandler(w http.ResponseWriter, req *http.
 }
 
 // PostNiceHandler
-func (c *MyAppController) PostNiceHandler(w http.ResponseWriter, req *http.Request) {
+func (c *ArticleController) PostNiceHandler(w http.ResponseWriter, req *http.Request) {
 	// jsonのデコーダーを使用し、リクエストボディをデコードし、記事を取得する
 	var reqArticle models.Article
 	if err := json.NewDecoder(req.Body).Decode(&reqArticle); err != nil {
@@ -116,24 +116,4 @@ func (c *MyAppController) PostNiceHandler(w http.ResponseWriter, req *http.Reque
 
 	// jsonのエンコーダーを使用し、記事をjsonにエンコードした上で、返却する
 	json.NewEncoder(w).Encode(article)
-}
-
-// PostCommentHandler
-func (c *MyAppController) PostCommentHandler(w http.ResponseWriter, req *http.Request) {
-	// jsonのデコーダーを使用し、リクエストボディをデコードし、コメントを取得する
-	var reqComment models.Comment
-	if err := json.NewDecoder(req.Body).Decode(&reqComment); err != nil {
-		http.Error(w, "fail to decode\n", http.StatusBadRequest)
-		return
-	}
-
-	//
-	comment, err := c.service.PostCommentService(reqComment)
-	if err != nil {
-		http.Error(w, "fail internal exec\n", http.StatusInternalServerError)
-		return
-	}
-
-	// jsonのエンコーダーを使用し、コメントをjsonにエンコードした上で、返却する
-	json.NewEncoder(w).Encode(comment)
 }

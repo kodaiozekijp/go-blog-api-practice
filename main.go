@@ -49,10 +49,11 @@ func main() {
 	ser := services.NewMyAppService(db)
 
 	// MyAppController構造体を生成
-	con := controllers.NewMyAppController(ser)
+	aCon := controllers.NewArticleController(ser)
+	cCon := controllers.NewCommentController(ser)
 
 	// ルータを生成
-	rou := routers.NewRouter(con)
+	rou := routers.NewRouter(aCon, cCon)
 
 	// サーバ起動時のログを出力
 	log.Println("server start at port 8080")
