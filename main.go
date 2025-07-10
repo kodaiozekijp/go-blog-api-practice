@@ -1,31 +1,54 @@
 package main
 
 import (
+	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
+	"os"
 
-	"github.com/gorilla/mux"
-	"github.com/kodaiozekijp/go-blog-api-practice/handlers"
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/joho/godotenv"
+	"github.com/kodaiozekijp/go-blog-api-practice/api"
 )
 
-func main() {
-	// gorilla/muxのルータを使用
-	r := mux.NewRouter()
+// DB接続で使用する変数
+var (
+	dbUser, dbPassword, dbDatabase = initEnv()
+	dbConn                         = fmt.Sprintf(
+		"%s:%s@tcp(127.0.0.1:3306)/%s?parseTime=true", dbUser,
+		dbPassword, dbDatabase)
+)
 
-	// ハンドラの登録
-	r.HandleFunc("/", handlers.HelloHandler).Methods(http.MethodGet)
-	r.HandleFunc("/article",
-		handlers.PostArticleHandler).Methods(http.MethodPost)
-	r.HandleFunc("/article/list",
-		handlers.ArticleListHandler).Methods(http.MethodGet)
-	// 記事IDをパスパラメータのidとして取得
-	r.HandleFunc("/article/{id:[0-9]+}",
-		handlers.ArticleDetailHandler).Methods(http.MethodGet)
-	r.HandleFunc("/article/nice", handlers.PostNiceHandler).Methods(http.MethodPost)
-	r.HandleFunc("/comment", handlers.PostCommentHandler).Methods(http.MethodPost)
+// 環境変数から必要な値を取得する処理
+func initEnv() (string, string, string) {
+	// 環境変数を設定
+	err := godotenv.Load("./docker-compose/.env")
+	if err != nil {
+		fmt.Println(err)
+		return "", "", ""
+	}
+	// 環境変数から必要な値を取得
+	dbUser := os.Getenv("MYSQL_USER")
+	dbPassword := os.Getenv("MYSQL_PASSWORD")
+	dbDatabase := os.Getenv("MYSQL_DATABASE")
+
+	return dbUser, dbPassword, dbDatabase
+}
+
+func main() {
+	// DBへの接続
+	db, err := sql.Open("mysql", dbConn)
+	if err != nil {
+		log.Println("fail to connect DB")
+		return
+	}
+
+	// ルータを生成
+	rou := api.NewRouter(db)
 
 	// サーバ起動時のログを出力
 	log.Println("server start at port 8080")
 	// ListenAndServe関数にて、サーバを起動
-	log.Fatal(http.ListenAndServe(":8080", r))
+	log.Fatal(http.ListenAndServe(":8080", rou))
 }
