@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	"github.com/kodaiozekijp/go-blog-api-practice/controllers"
+	"github.com/kodaiozekijp/go-blog-api-practice/routers"
 	"github.com/kodaiozekijp/go-blog-api-practice/services"
 )
 
@@ -51,23 +51,11 @@ func main() {
 	// MyAppController構造体を生成
 	con := controllers.NewMyAppController(ser)
 
-	// gorilla/muxのルータを使用
-	r := mux.NewRouter()
-
-	// ハンドラの登録
-	r.HandleFunc("/", con.HelloHandler).Methods(http.MethodGet)
-	r.HandleFunc("/article",
-		con.PostArticleHandler).Methods(http.MethodPost)
-	r.HandleFunc("/article/list",
-		con.ArticleListHandler).Methods(http.MethodGet)
-	// 記事IDをパスパラメータのidとして取得
-	r.HandleFunc("/article/{id:[0-9]+}",
-		con.ArticleDetailHandler).Methods(http.MethodGet)
-	r.HandleFunc("/article/nice", con.PostNiceHandler).Methods(http.MethodPost)
-	r.HandleFunc("/comment", con.PostCommentHandler).Methods(http.MethodPost)
+	// ルータを生成
+	rou := routers.NewRouter(con)
 
 	// サーバ起動時のログを出力
 	log.Println("server start at port 8080")
 	// ListenAndServe関数にて、サーバを起動
-	log.Fatal(http.ListenAndServe(":8080", r))
+	log.Fatal(http.ListenAndServe(":8080", rou))
 }
