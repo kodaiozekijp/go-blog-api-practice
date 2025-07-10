@@ -8,9 +8,7 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-	"github.com/kodaiozekijp/go-blog-api-practice/controllers"
-	"github.com/kodaiozekijp/go-blog-api-practice/routers"
-	"github.com/kodaiozekijp/go-blog-api-practice/services"
+	routers "github.com/kodaiozekijp/go-blog-api-practice/api"
 )
 
 // DB接続で使用する変数
@@ -45,15 +43,8 @@ func main() {
 		return
 	}
 
-	// MyAppService構造体を生成
-	ser := services.NewMyAppService(db)
-
-	// MyAppController構造体を生成
-	aCon := controllers.NewArticleController(ser)
-	cCon := controllers.NewCommentController(ser)
-
 	// ルータを生成
-	rou := routers.NewRouter(aCon, cCon)
+	rou := routers.NewRouter(db)
 
 	// サーバ起動時のログを出力
 	log.Println("server start at port 8080")

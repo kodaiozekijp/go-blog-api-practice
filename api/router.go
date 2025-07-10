@@ -1,14 +1,23 @@
 package routers
 
 import (
+	"database/sql"
 	"net/http"
 
 	"github.com/gorilla/mux"
 	"github.com/kodaiozekijp/go-blog-api-practice/controllers"
+	"github.com/kodaiozekijp/go-blog-api-practice/services"
 )
 
 // ルータを作成し、返却する
-func NewRouter(aCon *controllers.ArticleController, cCon *controllers.CommentController) *mux.Router {
+func NewRouter(db *sql.DB) *mux.Router {
+	// MyAppService構造体を生成
+	ser := services.NewMyAppService(db)
+
+	// ArticleController及びCommentController構造体を生成
+	aCon := controllers.NewArticleController(ser)
+	cCon := controllers.NewCommentController(ser)
+
 	// gorilla/muxのルータを使用
 	r := mux.NewRouter()
 
