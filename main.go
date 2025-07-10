@@ -7,8 +7,9 @@ import (
 	"net/http"
 	"os"
 
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
-	routers "github.com/kodaiozekijp/go-blog-api-practice/api"
+	"github.com/kodaiozekijp/go-blog-api-practice/api"
 )
 
 // DB接続で使用する変数
@@ -44,7 +45,7 @@ func main() {
 	}
 
 	// ルータを生成
-	rou := routers.NewRouter(db)
+	rou := api.NewRouter(db)
 
 	// サーバ起動時のログを出力
 	log.Println("server start at port 8080")
