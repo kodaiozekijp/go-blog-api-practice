@@ -1,4 +1,4 @@
-package handlers
+package controllers
 
 import (
 	"encoding/json"
@@ -11,15 +11,26 @@ import (
 	"github.com/kodaiozekijp/go-blog-api-practice/services"
 )
 
+// コントローラ構造体を定義
+type MyAppController struct {
+	// フィールドにMyAppService構造体を持たせる
+	service *services.MyAppService
+}
+
+// コンストラクタの定義
+func NewMyAppController(s *services.MyAppService) *MyAppController {
+	return &MyAppController{service: s}
+}
+
 // ハンドラ定義
 // HelloHandler
-func HelloHandler(w http.ResponseWriter, req *http.Request) {
+func (c *MyAppController) HelloHandler(w http.ResponseWriter, req *http.Request) {
 	// ハンドラの処理内容
 	io.WriteString(w, "hello, World!\n")
 }
 
 // PostArticleHandler
-func PostArticleHandler(w http.ResponseWriter, req *http.Request) {
+func (c *MyAppController) PostArticleHandler(w http.ResponseWriter, req *http.Request) {
 	// jsonのデコーダーを使用し、リクエストボディをデコードし、記事を取得する
 	var reqArticle models.Article
 	if err := json.NewDecoder(req.Body).Decode(&reqArticle); err != nil {
@@ -28,7 +39,7 @@ func PostArticleHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// services層の関数PostArticleServiceで記事を登録する
-	newArticle, err := services.PostArticleService(reqArticle)
+	newArticle, err := c.service.PostArticleService(reqArticle)
 	if err != nil {
 		http.Error(w, "fail internal exec\n", http.StatusInternalServerError)
 		return
@@ -39,7 +50,7 @@ func PostArticleHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 // ArticleListHandler
-func ArticleListHandler(w http.ResponseWriter, req *http.Request) {
+func (c *MyAppController) ArticleListHandler(w http.ResponseWriter, req *http.Request) {
 	// URLからクエリパラメータを取得
 	queryMap := req.URL.Query()
 	// ページ番号に該当するデータを返す
@@ -57,7 +68,7 @@ func ArticleListHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// services層の関数GetArticleListServiceで記事の一覧を取得
-	articleList, err := services.GetArticleListService(page)
+	articleList, err := c.service.GetArticleListService(page)
 	if err != nil {
 		http.Error(w, "fail internal exec\n", http.StatusInternalServerError)
 		return
@@ -68,7 +79,7 @@ func ArticleListHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 // ArticleDetailHandler
-func ArticleDetailHandler(w http.ResponseWriter, req *http.Request) {
+func (c *MyAppController) ArticleDetailHandler(w http.ResponseWriter, req *http.Request) {
 	// URLからパスパラメータである記事IDを取得し、該当する記事を返す
 	articleID, err := strconv.Atoi(mux.Vars(req)["id"])
 	if err != nil {
@@ -77,7 +88,7 @@ func ArticleDetailHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	//  services層の関数GetArticleServiceでIDに紐づく記事を取得
-	article, err := services.GetArticleService(articleID)
+	article, err := c.service.GetArticleService(articleID)
 	if err != nil {
 		http.Error(w, "fail internal exec\n", http.StatusInternalServerError)
 		return
@@ -88,7 +99,7 @@ func ArticleDetailHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 // PostNiceHandler
-func PostNiceHandler(w http.ResponseWriter, req *http.Request) {
+func (c *MyAppController) PostNiceHandler(w http.ResponseWriter, req *http.Request) {
 	// jsonのデコーダーを使用し、リクエストボディをデコードし、記事を取得する
 	var reqArticle models.Article
 	if err := json.NewDecoder(req.Body).Decode(&reqArticle); err != nil {
@@ -97,7 +108,7 @@ func PostNiceHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// services層の関数PostNiceServiceで記事のいいね数を1増やす
-	article, err := services.PostNiceService(reqArticle)
+	article, err := c.service.PostNiceService(reqArticle)
 	if err != nil {
 		http.Error(w, "fail internal exec\n", http.StatusInternalServerError)
 		return
@@ -108,7 +119,7 @@ func PostNiceHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 // PostCommentHandler
-func PostCommentHandler(w http.ResponseWriter, req *http.Request) {
+func (c *MyAppController) PostCommentHandler(w http.ResponseWriter, req *http.Request) {
 	// jsonのデコーダーを使用し、リクエストボディをデコードし、コメントを取得する
 	var reqComment models.Comment
 	if err := json.NewDecoder(req.Body).Decode(&reqComment); err != nil {
@@ -117,7 +128,7 @@ func PostCommentHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	//
-	comment, err := services.PostCommentService(reqComment)
+	comment, err := c.service.PostCommentService(reqComment)
 	if err != nil {
 		http.Error(w, "fail internal exec\n", http.StatusInternalServerError)
 		return
