@@ -2,6 +2,7 @@ package services
 
 import (
 	"database/sql"
+	"errors"
 
 	"github.com/kodaiozekijp/go-blog-api-practice/apperrors"
 	"github.com/kodaiozekijp/go-blog-api-practice/models"
@@ -37,12 +38,18 @@ func (s *MyAppService) PostArticleService(article models.Article) (models.Articl
 // 指定されたページの記事の一覧を返却する
 func (s *MyAppService) GetArticleListService(page int) ([]models.Article, error) {
 	// repositories層の関数SelectArticleListで指定されたページの記事一覧を取得
-	articles, err := repositories.SelectArticleList(s.db, page)
+	articleList, err := repositories.SelectArticleList(s.db, page)
 	if err != nil {
+		// 独自エラーのMyAppErrorでerrorをラップする
+		err = apperrors.GetDataFailed.Wrap(err, "fail to get data")
 		return nil, err
 	}
 
-	return articles, nil
+	if len(articleList) == 0 {
+		err := apperrors.NAData.Wrap(ErrNoData, "no data")
+		return nil, err
+	}
+	return articleList, nil
 }
 
 // ArticleDetailHandlerで使うことを想定したサービス
@@ -51,12 +58,22 @@ func (s *MyAppService) GetArticleService(articleID int) (models.Article, error) 
 	// repositories層の関数SelectArticleDetailで記事の詳細を取得
 	article, err := repositories.SelectArticleDetail(s.db, articleID)
 	if err != nil {
+		// 取得したデータが0件か確認
+		if errors.Is(err, sql.ErrNoRows) {
+			// 独自エラーのMyAppErrorでerrorをラップする
+			err = apperrors.NAData.Wrap(err, "no data")
+			return models.Article{}, err
+		}
+		// 独自エラーのMyAppErrorでerrorをラップする
+		err = apperrors.GetDataFailed.Wrap(err, "fail to get data")
 		return models.Article{}, err
 	}
 
 	// repositories層の関数SelectCommentListでコメント一覧を取得
 	commentList, err := repositories.SelectCommentList(s.db, articleID)
 	if err != nil {
+		// 独自エラーのMyAppErrorでerrorをラップする
+		err = apperrors.GetDataFailed.Wrap(err, "fail to get data")
 		return models.Article{}, err
 	}
 
@@ -72,6 +89,13 @@ func (s *MyAppService) PostNiceService(article models.Article) (models.Article, 
 	// repositories層の関数UpdateNiceNumでいいね数を1増やす
 	err := repositories.UpdateNiceNum(s.db, article.ID)
 	if err != nil {
+		// 更新対象のデータが存在するか確認
+		if errors.Is(err, sql.ErrNoRows) {
+			err = apperrors.NoTargetData.Wrap(err, "does not exist target article")
+			return models.Article{}, err
+		}
+		// 独自エラーのMyAppErrorでerrorをラップする
+		err = apperrors.UpdateDataFailed.Wrap(err, "fail to update nice num")
 		return models.Article{}, err
 	}
 
@@ -91,6 +115,8 @@ func (s *MyAppService) PostCommentService(comment models.Comment) (models.Commen
 	// repositories層の関数InsertCommentでコメントを登録
 	newComment, err := repositories.InsertComment(s.db, comment)
 	if err != nil {
+		// 独自エラーのMyAppErrorでerrorをラップする
+		err = apperrors.InsertDataFailed.Wrap(err, "fail to record data")
 		return models.Comment{}, err
 	}
 
