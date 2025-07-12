@@ -3,6 +3,7 @@ package services
 import (
 	"database/sql"
 
+	"github.com/kodaiozekijp/go-blog-api-practice/apperrors"
 	"github.com/kodaiozekijp/go-blog-api-practice/models"
 	"github.com/kodaiozekijp/go-blog-api-practice/repositories"
 )
@@ -24,6 +25,8 @@ func (s *MyAppService) PostArticleService(article models.Article) (models.Articl
 	// repositories層の関数InsertArticleで記事を登録
 	newArticle, err := repositories.InsertArticle(s.db, article)
 	if err != nil {
+		// 独自エラーのMyAppErrorでerrorをラップする
+		err = apperrors.InsertDataFailed.Wrap(err, "fail to record data")
 		return models.Article{}, err
 	}
 

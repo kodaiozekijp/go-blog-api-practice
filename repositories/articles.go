@@ -75,6 +75,7 @@ func SelectArticleDetail(db *sql.DB, articleID int) (models.Article, error) {
 	// SELECT文の実行
 	row := db.QueryRow(sqlStr, articleID)
 	if err := row.Err(); err != nil {
+		
 		return models.Article{}, err
 	}
 	// 返却用の記事の定義
