@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
+	"github.com/kodaiozekijp/go-blog-api-practice/apperrors"
 	"github.com/kodaiozekijp/go-blog-api-practice/controllers/services"
 	"github.com/kodaiozekijp/go-blog-api-practice/models"
 )
@@ -34,6 +35,7 @@ func (c *ArticleController) PostArticleHandler(w http.ResponseWriter, req *http.
 	// jsonのデコーダーを使用し、リクエストボディをデコードし、記事を取得する
 	var reqArticle models.Article
 	if err := json.NewDecoder(req.Body).Decode(&reqArticle); err != nil {
+		err = apperrors.ReqBodyDecodeFailed.Wrap(err, "bad request body")
 		http.Error(w, "fail to decode json\n", http.StatusBadRequest)
 		return
 	}
@@ -59,6 +61,7 @@ func (c *ArticleController) ArticleListHandler(w http.ResponseWriter, req *http.
 		var err error
 		page, err = strconv.Atoi(p[0])
 		if err != nil {
+			err = apperrors.BadParameter.Wrap(err, "query parameter must be number")
 			http.Error(w, "Invalid query parameter", http.StatusBadRequest)
 			return
 		}
@@ -83,6 +86,7 @@ func (c *ArticleController) ArticleDetailHandler(w http.ResponseWriter, req *htt
 	// URLからパスパラメータである記事IDを取得し、該当する記事を返す
 	articleID, err := strconv.Atoi(mux.Vars(req)["id"])
 	if err != nil {
+		err = apperrors.BadParameter.Wrap(err, "path parameter must be number")
 		http.Error(w, "Invalid query parameter", http.StatusBadRequest)
 		return
 	}
@@ -103,6 +107,7 @@ func (c *ArticleController) PostNiceHandler(w http.ResponseWriter, req *http.Req
 	// jsonのデコーダーを使用し、リクエストボディをデコードし、記事を取得する
 	var reqArticle models.Article
 	if err := json.NewDecoder(req.Body).Decode(&reqArticle); err != nil {
+		err = apperrors.ReqBodyDecodeFailed.Wrap(err, "bad request body")
 		http.Error(w, "fail to decode\n", http.StatusBadRequest)
 		return
 	}

@@ -10,6 +10,9 @@ const (
 	NAData           ErrCode = "S003"
 	NoTargetData     ErrCode = "S004"
 	UpdateDataFailed ErrCode = "S005"
+
+	ReqBodyDecodeFailed ErrCode = "C001"
+	BadParameter        ErrCode = "C002"
 )
 
 // 元となるエラーを受け取ってMyAppError型にラップして返却する
