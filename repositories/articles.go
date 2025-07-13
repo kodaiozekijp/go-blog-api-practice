@@ -50,7 +50,7 @@ func SelectArticleList(db *sql.DB, page int) ([]models.Article, error) {
 	}
 	defer rows.Close()
 	// 返却用のmodels.Article構造体のスライスの定義
-	articleArray := make([]models.Article, 0)
+	articleList := make([]models.Article, 0)
 	// 取得したレコードをarticleArrayに格納する
 	for rows.Next() {
 		var article models.Article
@@ -59,10 +59,10 @@ func SelectArticleList(db *sql.DB, page int) ([]models.Article, error) {
 		if err != nil {
 			return nil, err
 		}
-		articleArray = append(articleArray, article)
+		articleList = append(articleList, article)
 	}
 
-	return articleArray, nil
+	return articleList, nil
 }
 
 // 記事IDを指定して、記事を取得する
@@ -75,6 +75,7 @@ func SelectArticleDetail(db *sql.DB, articleID int) (models.Article, error) {
 	// SELECT文の実行
 	row := db.QueryRow(sqlStr, articleID)
 	if err := row.Err(); err != nil {
+
 		return models.Article{}, err
 	}
 	// 返却用の記事の定義

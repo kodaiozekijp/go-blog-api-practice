@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
+	"github.com/kodaiozekijp/go-blog-api-practice/apperrors"
 	"github.com/kodaiozekijp/go-blog-api-practice/controllers/services"
 	"github.com/kodaiozekijp/go-blog-api-practice/models"
 )
@@ -34,14 +35,15 @@ func (c *ArticleController) PostArticleHandler(w http.ResponseWriter, req *http.
 	// jsonのデコーダーを使用し、リクエストボディをデコードし、記事を取得する
 	var reqArticle models.Article
 	if err := json.NewDecoder(req.Body).Decode(&reqArticle); err != nil {
-		http.Error(w, "fail to decode json\n", http.StatusBadRequest)
+		err = apperrors.ReqBodyDecodeFailed.Wrap(err, "bad request body")
+		apperrors.ErrorHandler(w, req, err)
 		return
 	}
 
 	// services層の関数PostArticleServiceで記事を登録する
 	newArticle, err := c.service.PostArticleService(reqArticle)
 	if err != nil {
-		http.Error(w, "fail internal exec\n", http.StatusInternalServerError)
+		apperrors.ErrorHandler(w, req, err)
 		return
 	}
 
@@ -59,7 +61,8 @@ func (c *ArticleController) ArticleListHandler(w http.ResponseWriter, req *http.
 		var err error
 		page, err = strconv.Atoi(p[0])
 		if err != nil {
-			http.Error(w, "Invalid query parameter", http.StatusBadRequest)
+			err = apperrors.BadParameter.Wrap(err, "query parameter must be number")
+			apperrors.ErrorHandler(w, req, err)
 			return
 		}
 		// クエリパラメータがURLに含まれていない場合は、1ページ目のデータを返す
@@ -70,7 +73,7 @@ func (c *ArticleController) ArticleListHandler(w http.ResponseWriter, req *http.
 	// services層の関数GetArticleListServiceで記事の一覧を取得
 	articleList, err := c.service.GetArticleListService(page)
 	if err != nil {
-		http.Error(w, "fail internal exec\n", http.StatusInternalServerError)
+		apperrors.ErrorHandler(w, req, err)
 		return
 	}
 
@@ -83,14 +86,15 @@ func (c *ArticleController) ArticleDetailHandler(w http.ResponseWriter, req *htt
 	// URLからパスパラメータである記事IDを取得し、該当する記事を返す
 	articleID, err := strconv.Atoi(mux.Vars(req)["id"])
 	if err != nil {
-		http.Error(w, "Invalid query parameter", http.StatusBadRequest)
+		err = apperrors.BadParameter.Wrap(err, "path parameter must be number")
+		apperrors.ErrorHandler(w, req, err)
 		return
 	}
 
 	//  services層の関数GetArticleServiceでIDに紐づく記事を取得
 	article, err := c.service.GetArticleService(articleID)
 	if err != nil {
-		http.Error(w, "fail internal exec\n", http.StatusInternalServerError)
+		apperrors.ErrorHandler(w, req, err)
 		return
 	}
 
@@ -103,14 +107,15 @@ func (c *ArticleController) PostNiceHandler(w http.ResponseWriter, req *http.Req
 	// jsonのデコーダーを使用し、リクエストボディをデコードし、記事を取得する
 	var reqArticle models.Article
 	if err := json.NewDecoder(req.Body).Decode(&reqArticle); err != nil {
-		http.Error(w, "fail to decode\n", http.StatusBadRequest)
+		err = apperrors.ReqBodyDecodeFailed.Wrap(err, "bad request body")
+		apperrors.ErrorHandler(w, req, err)
 		return
 	}
 
 	// services層の関数PostNiceServiceで記事のいいね数を1増やす
 	article, err := c.service.PostNiceService(reqArticle)
 	if err != nil {
-		http.Error(w, "fail internal exec\n", http.StatusInternalServerError)
+		apperrors.ErrorHandler(w, req, err)
 		return
 	}
 
