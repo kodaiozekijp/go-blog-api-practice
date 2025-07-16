@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/kodaiozekijp/go-blog-api-practice/api/middlewares"
 	"github.com/kodaiozekijp/go-blog-api-practice/controllers"
 	"github.com/kodaiozekijp/go-blog-api-practice/services"
 )
@@ -32,6 +33,9 @@ func NewRouter(db *sql.DB) *mux.Router {
 		aCon.ArticleDetailHandler).Methods(http.MethodGet)
 	r.HandleFunc("/article/nice", aCon.PostNiceHandler).Methods(http.MethodPost)
 	r.HandleFunc("/comment", cCon.PostCommentHandler).Methods(http.MethodPost)
+
+	// ミドルウェアによる処理
+	r.Use(middlewares.LoggingMiddleWare)
 
 	// 作成したルータを返却
 	return r
