@@ -55,25 +55,40 @@ func (s *MyAppService) GetArticleListService(page int) ([]models.Article, error)
 // ArticleDetailHandlerで使うことを想定したサービス
 // 指定されたIDの記事を返却
 func (s *MyAppService) GetArticleService(articleID int) (models.Article, error) {
-	// repositories層の関数SelectArticleDetailで記事の詳細を取得
-	article, err := repositories.SelectArticleDetail(s.db, articleID)
-	if err != nil {
+	// 変数定義
+	var article models.Article
+	var commentList []models.Comment
+	var articleGetErr, commentGetErr error
+
+	// --- Article構造体を取得する go routin START ---
+	go func() {
+		// repositories層の関数SelectArticleDetailで記事の詳細を取得
+		article, articleGetErr = repositories.SelectArticleDetail(s.db, articleID)
+	}()
+	// --- Article構造体を取得する go routin END ---
+
+	// --- Comment構造体のリストを取得する go routin START ---
+	go func() {
+		// repositories層の関数SelectCommentListでコメント一覧を取得
+		commentList, commentGetErr = repositories.SelectCommentList(s.db, articleID)
+	}()
+	// --- Comment構造体のリストを取得する go routin END ---
+
+	if articleGetErr != nil {
 		// 取得したデータが0件か確認
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(articleGetErr, sql.ErrNoRows) {
 			// 独自エラーのMyAppErrorでerrorをラップする
-			err = apperrors.NAData.Wrap(err, "no data")
+			err := apperrors.NAData.Wrap(articleGetErr, "no data")
 			return models.Article{}, err
 		}
 		// 独自エラーのMyAppErrorでerrorをラップする
-		err = apperrors.GetDataFailed.Wrap(err, "fail to get data")
+		err := apperrors.GetDataFailed.Wrap(articleGetErr, "fail to get data")
 		return models.Article{}, err
 	}
 
-	// repositories層の関数SelectCommentListでコメント一覧を取得
-	commentList, err := repositories.SelectCommentList(s.db, articleID)
-	if err != nil {
+	if commentGetErr != nil {
 		// 独自エラーのMyAppErrorでerrorをラップする
-		err = apperrors.GetDataFailed.Wrap(err, "fail to get data")
+		err := apperrors.GetDataFailed.Wrap(commentGetErr, "fail to get data")
 		return models.Article{}, err
 	}
 

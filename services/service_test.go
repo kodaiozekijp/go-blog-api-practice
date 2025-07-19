@@ -52,7 +52,8 @@ func TestMain(m *testing.M) {
 	m.Run()
 }
 
-func BenchmarkGetArticleListService(b *testing.B) {
+// GetArticleServiceのベンチマークテスト
+func BenchmarkGetArticleService(b *testing.B) {
 	articleID := 1
 
 	// 計測を始める為にタイマーを初期化
@@ -60,7 +61,7 @@ func BenchmarkGetArticleListService(b *testing.B) {
 
 	// GetArticleListServicesの実行
 	for i := 0; i < b.N; i++ {
-		_, err := ser.GetArticleListService(articleID)
+		_, err := ser.GetArticleService(articleID)
 		if err != nil {
 			b.Error(err)
 			break
