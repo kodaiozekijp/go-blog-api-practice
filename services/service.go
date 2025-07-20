@@ -3,6 +3,7 @@ package services
 import (
 	"database/sql"
 	"errors"
+	"sync"
 
 	"github.com/kodaiozekijp/go-blog-api-practice/apperrors"
 	"github.com/kodaiozekijp/go-blog-api-practice/models"
@@ -60,19 +61,43 @@ func (s *MyAppService) GetArticleService(articleID int) (models.Article, error) 
 	var commentList []models.Comment
 	var articleGetErr, commentGetErr error
 
-	// --- Article構造体を取得する go routin START ---
-	go func() {
-		// repositories層の関数SelectArticleDetailで記事の詳細を取得
-		article, articleGetErr = repositories.SelectArticleDetail(s.db, articleID)
-	}()
-	// --- Article構造体を取得する go routin END ---
+	// ロックと待ち合わせで使用
+	var amu sync.Mutex
+	var cmu sync.Mutex
 
-	// --- Comment構造体のリストを取得する go routin START ---
-	go func() {
+	var wg sync.WaitGroup
+
+	// sync.WaitGroupのカウンタを2に設定
+	wg.Add(2)
+
+	// --- Article構造体を取得する goroutine START ---
+	go func(db *sql.DB, articleID int) {
+		// sync.WaitGroupのカウンタを-1する
+		defer wg.Done()
+		// 競合しないようにロックをかける
+		amu.Lock()
+		// repositories層の関数SelectArticleDetailで記事の詳細を取得
+		article, articleGetErr = repositories.SelectArticleDetail(db, articleID)
+		// ロック解除
+		amu.Unlock()
+	}(s.db, articleID)
+	// --- Article構造体を取得する goroutine END ---
+
+	// --- Comment構造体のリストを取得する goroutine START ---
+	go func(db *sql.DB, articleID int) {
+		// sync.WaitGroupのカウンタを-1する
+		defer wg.Done()
+		// 競合しないようにロックをかける
+		cmu.Lock()
 		// repositories層の関数SelectCommentListでコメント一覧を取得
-		commentList, commentGetErr = repositories.SelectCommentList(s.db, articleID)
-	}()
-	// --- Comment構造体のリストを取得する go routin END ---
+		commentList, commentGetErr = repositories.SelectCommentList(db, articleID)
+		// ロック解除
+		cmu.Unlock()
+	}(s.db, articleID)
+	// --- Comment構造体のリストを取得する goroutine END ---
+
+	// 二つのgoroutineが終了するまで処理を待機
+	wg.Wait()
 
 	if articleGetErr != nil {
 		// 取得したデータが0件か確認
