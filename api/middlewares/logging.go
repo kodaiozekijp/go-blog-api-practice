@@ -31,6 +31,10 @@ func LoggingMiddleWare(next http.Handler) http.Handler {
 		// リクエスト情報をロギング
 		log.Printf("[%d]%s %s\n", traceID, req.RequestURI, req.Method)
 
+		// リクエストのコンテキストをトレースID入りのコンテキストにする
+		ctx := SetTraceID(req.Context(), traceID)
+		req = req.WithContext(ctx)
+
 		// 自作のResponseWriterを生成
 		rlw := NewResLoggingWriter(w)
 

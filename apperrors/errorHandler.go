@@ -3,7 +3,10 @@ package apperrors
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
+
+	"github.com/kodaiozekijp/go-blog-api-practice/api/middlewares"
 )
 
 // エラーの内容に応じた
@@ -17,6 +20,10 @@ func ErrorHandler(w http.ResponseWriter, req *http.Request, err error) {
 			Err:     err,
 		}
 	}
+
+	// トレースIDを使用しロギングする
+	traceID := middlewares.GetTraceID(req.Context())
+	log.Printf("[%d]error: %s\n", traceID, appErr)
 
 	// 元となったエラーに応じたステータスコードを設定する
 	var statusCode int
