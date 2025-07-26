@@ -36,6 +36,7 @@ func NewRouter(db *sql.DB) *mux.Router {
 
 	// ミドルウェアによる処理
 	r.Use(middlewares.LoggingMiddleWare)
+	r.Use(middlewares.AuthMiddleware)
 
 	// 作成したルータを返却
 	return r
