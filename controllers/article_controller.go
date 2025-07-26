@@ -2,12 +2,14 @@ package controllers
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"strconv"
 
 	"github.com/gorilla/mux"
 	"github.com/kodaiozekijp/go-blog-api-practice/apperrors"
+	"github.com/kodaiozekijp/go-blog-api-practice/common"
 	"github.com/kodaiozekijp/go-blog-api-practice/controllers/services"
 	"github.com/kodaiozekijp/go-blog-api-practice/models"
 )
@@ -36,6 +38,14 @@ func (c *ArticleController) PostArticleHandler(w http.ResponseWriter, req *http.
 	var reqArticle models.Article
 	if err := json.NewDecoder(req.Body).Decode(&reqArticle); err != nil {
 		err = apperrors.ReqBodyDecodeFailed.Wrap(err, "bad request body")
+		apperrors.ErrorHandler(w, req, err)
+		return
+	}
+
+	// コンテキストのnameフィールドの値と、reqArticleの著者の値が一致しているか検証する
+	userName := common.GetUserName(req.Context())
+	if reqArticle.Author != userName {
+		err := apperrors.NotMatchUser.Wrap(errors.New("does not match reqBody author and idtoken user"), "invalid parameter")
 		apperrors.ErrorHandler(w, req, err)
 		return
 	}
