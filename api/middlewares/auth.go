@@ -7,36 +7,13 @@ import (
 	"strings"
 
 	"github.com/kodaiozekijp/go-blog-api-practice/apperrors"
+	"github.com/kodaiozekijp/go-blog-api-practice/common"
 	"google.golang.org/api/idtoken"
 )
 
 const (
 	googleClientID = "629786876842-u95882tfn5c63p4ng5dtikh7cv677am1.apps.googleusercontent.com"
 )
-
-// コンテキストの中のnameフィールドに対応させるキー構造体
-type userNameKey struct{}
-
-// コンテキストからnameフィールドの値を取得する
-func GetUserName(ctx context.Context) string {
-	id := ctx.Value(userNameKey{})
-
-	// コンテキストから取得したnameフィールドの値をstringにして返却する
-	if userNameStr, ok := id.(string); ok {
-		return userNameStr
-	}
-	return ""
-}
-
-// コンテキストにnameフィールドの値をセットする
-func SetUserName(req *http.Request, name string) *http.Request {
-	ctx := req.Context() // 引数のリクエストからコンテキストを取得
-
-	ctx = context.WithValue(ctx, userNameKey{}, name) // コンテキストのnameフィールドの値を設定
-	req = req.WithContext(ctx)                        // リクエストにコンテキストを設定
-
-	return req
-}
 
 // トークン検証を行うミドルウェア
 func AuthMiddleware(next http.Handler) http.Handler {
@@ -83,7 +60,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		}
 
 		// コンテキストのnameフィールドを設定
-		req = SetUserName(req, name.(string))
+		req = common.SetUserName(req, name.(string))
 
 		// ハンドラへ
 		next.ServeHTTP(w, req)

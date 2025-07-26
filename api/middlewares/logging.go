@@ -3,6 +3,8 @@ package middlewares
 import (
 	"log"
 	"net/http"
+
+	"github.com/kodaiozekijp/go-blog-api-practice/common"
 )
 
 // 自作のResponseWriter
@@ -32,7 +34,7 @@ func LoggingMiddleWare(next http.Handler) http.Handler {
 		log.Printf("[%d]%s %s\n", traceID, req.RequestURI, req.Method)
 
 		// リクエストのコンテキストをトレースID入りのコンテキストにする
-		ctx := SetTraceID(req.Context(), traceID)
+		ctx := common.SetTraceID(req.Context(), traceID)
 		req = req.WithContext(ctx)
 
 		// 自作のResponseWriterを生成

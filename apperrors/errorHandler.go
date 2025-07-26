@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/kodaiozekijp/go-blog-api-practice/api/middlewares"
+	"github.com/kodaiozekijp/go-blog-api-practice/common"
 )
 
 // エラーの内容に応じた
@@ -22,7 +22,7 @@ func ErrorHandler(w http.ResponseWriter, req *http.Request, err error) {
 	}
 
 	// トレースIDを使用しロギングする
-	traceID := middlewares.GetTraceID(req.Context())
+	traceID := common.GetTraceID(req.Context())
 	log.Printf("[%d]error: %s\n", traceID, appErr)
 
 	// 元となったエラーに応じたステータスコードを設定する
