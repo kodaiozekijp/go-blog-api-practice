@@ -13,6 +13,10 @@ const (
 
 	ReqBodyDecodeFailed ErrCode = "C001"
 	BadParameter        ErrCode = "C002"
+
+	RequiredAuthorizationHeader ErrCode = "A001"
+	CannotMakeValidator         ErrCode = "A002"
+	Unauthorizated              ErrCode = "A003"
 )
 
 // 元となるエラーを受け取ってMyAppError型にラップして返却する
